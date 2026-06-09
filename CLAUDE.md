@@ -26,21 +26,23 @@ Use `uv run nox -l` and `uv run noc -s ${SESSION}` over manual commands to the v
 
 ## Development Workflow
 
+Prefer using `nox` commands using `uv` over manual program calls.
+
 ### Backend (Python)
 - **Dependency Management**: `uv sync` (workspace-level). All Python commands should use `uv run`.
-- **Run the server**: `cd backend && APP_ENV=development uv run fastapi dev src/api/main.py`
+- **Run the servers**: `uv run nox -s dev`
   - The server starts on port 8000 by default. CORS allows `http://localhost:5173` in development.
-- **Configuration**: Edit `backend/src/api/config/__init__.py` to change the LLM model name or host URL. Default is a local LM Studio instance at `http://localhost:1234/v1`.
-- **Testing**: `uv run pytest tests/ --doctest-modules` (runs in `development` env by default)
-- **Linting**: `uv run ruff format src tests && uv run ruff check --fix src tests && uv run mypy src`
+- **Configuration**: Edit the `.env` if available, otherwise copy from `.env.example`.
+- **Testing**: `uv run nox -s tests` (runs in `development` env by default)
+- **Linting**: `uv run nox -s fix` and `uv run nox -s lint`
 
 ### Frontend (React)
 - **Package Manager**: Uses `npm`. All commands should be run from the `frontend/` directory.
 - **Environment variables**: Copy `frontend/.env.example` to `.env` and adjust `VITE_API_URL` if needed. Default points to `http://127.0.0.1:8000/`.
-- **Development**: `cd frontend && npm run dev` — starts Vite on port 5173 with HMR.
+- **Development**: `uv run nox -s dev` — Starts both fontend and backend. Starts Vite on port 5173 with HMR.
 - **Build**: `npm run build` — production build via React Router.
 - **Type checking**: `npm run typecheck` — runs `react-router typegen && tsc`.
-- **Linting/formatting**: `npm run lint` — runs Biome check with auto-fix.
+- **Linting/formatting**: `uv run nox -s frontend` — runs build, ts compile, and Biome check with auto-fix.
 
 ### Full stack (Nox)
 Run all checks: `uv run nox`
@@ -51,15 +53,3 @@ Available sessions (`uv run nox -l`):
 - `tests` — pytest with coverage (env set to `development`)
 - `frontend` — npm ci, build, and lint in the frontend directory
 - `dev` — runs both backend (`fastapi dev`) and frontend (`npm run dev`) concurrently via `npx concurrently --kill-others`
-
-### Docker (Frontend)
-The `frontend/Dockerfile` builds a multi-stage production image. Run with:
-```bash
-docker build -t owkin-chat-frontend frontend/
-docker run -p 3000:3000 -e VITE_API_URL=https://your-api.example.com owkin-chat-frontend
-```
-
-## Architecture Notes
-- The frontend chat uses `@assistant-ui/react` for the thread/message UI, with a custom `ChatModelAdapter` that calls the backend `/chat` endpoint. Messages are serialized as plain text (role + content per message).
-- The backend `/chat` endpoint accepts `{ "messages": "<string>" }` and returns an SSE-style streaming response via `AsyncIterable[str]`. Each chunk is yielded from `pydantic_ai.Agent.run_stream()`.
-- CORS is configured dynamically: in development, it allows localhost origins; in production, it requires the `ALLOWED_ORIGINS` environment variable (comma-separated).

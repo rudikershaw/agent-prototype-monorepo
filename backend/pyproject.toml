@@ -12,6 +12,7 @@ dependencies = [
     "pandas>=3.0.3",
     "pandas-stubs>=3.0.3.260530",
     "pydantic-ai>=1.106.0",
+    "python-dotenv>=1.2.2",
 ]
 license = { text = "MIT" }
 keywords = [ ]

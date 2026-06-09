@@ -38,6 +38,8 @@ def tests(session: Session) -> None:
     """Run tests with pytest and check coverage."""
     session.chdir("backend")
     session.env["APP_ENV"] = "development"
+    session.env["INFERENCE_HOST"] = "http://localhost:1234/v1"
+    session.env["INFERENCE_MODEL"] = "qwen3.6-35b-a3b-uncensored-genesis-v2-apex-mtp"
     session.run(
         "pytest",
         "tests",

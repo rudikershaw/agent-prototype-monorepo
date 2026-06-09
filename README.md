@@ -1,6 +1,6 @@
 # Owkin Technical Demonstration — AI Chat Agent
 
-A full-stack chat application that delegates to an OpenAI-compatible LLM endpoint for conversational interactions about biotech data (genes, cancer indications, expression values). Built as a technical assignment for Owkin.
+A chat application that delegates to pydantic AI selected LLM endpoint for conversational interactions about biotech data (genes, cancer indications, expression values). 
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005574?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -10,29 +10,23 @@ A full-stack chat application that delegates to an OpenAI-compatible LLM endpoin
 
 ## Overview
 
-This application provides a conversational interface for interacting with an AI agent. Users can ask questions about genes, cancer indications, and gene expression values from the dataset in `technical-test/owkin_take_home_data.csv`.
-
-**Example queries:**
-- "What are the main genes involved in lung cancer?"
-- "What is the median value expression of genes involved in breast cancer?"
-- "How can you help me?"
-
 ## Prerequisites
 
 ### uv (Python dependency manager)
-This project uses [uv](https://github.com/astral-sh/uv) for dependency management and virtual environment management. Install it following the [official documentation](https://docs.astral.sh/uv/getting-started/installation/). Verify with `uv --version` (0.11+ required).
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management and virtual environment management. Install it using the [official documentation](https://docs.astral.sh/uv/getting-started/installation/). Verify with `uv --version` (0.11+ required).
 
 ### Node.js
 The frontend uses npm and requires Node.js 20+. Install from [nodejs.org](https://nodejs.org/) or via your package manager.
 
 ## Quick Start
 
+The solution can be run and tested immediately using a free Google API key and Gemini Flash 2.5. I will supply an API key over email when submitting the task.
+
 ```bash
 # Clone the repository
 git clone git@github.com:rudikershaw/agent-prototype-monorepo.git && cd agent-prototype-monorepo
 
 # Start both servers
-cd frontend && npm install && cd ..
 uv run nox -s dev
 ```
 
@@ -40,7 +34,15 @@ This starts:
 - **Backend** on `http://localhost:8000` (FastAPI dev server with auto-reload)
 - **Frontend** on `http://localhost:5173` (Vite dev server with HMR)
 
+To configure use for your own model or provider
+```bash
+# Copy the backend .env file and then manually edit to include your provider details.
+cp backend/.env.example backend/.env 
+```
+
 ## Project Structure
+
+The project was assembled using a variety of pre-made templates. The frontend uses the ReactRouterv7 default templates. The backend uses FastAPI's default new project template. The python project that includes the FastAPI app is my own template including a variety of additional linting, testing, and typechecking steps plus task running using `nox`. The agent chat interface is a default that can be initialised with `assistant-ui`, which pulls in a variety of template components into the project. These components were then all wrapped in a python mono-repo format so it could be handed over in one piece. The project directory structure can be seen below.
 
 ```
 .
@@ -49,79 +51,54 @@ This starts:
 │   ├── src/api/
 │   │   ├── main.py             # App entry point, router registration
 │   │   ├── controller/         # Route handlers (chat, health)
-│   │   ├── service/            # Business logic (inference service)
-│   │   └── config/             # Settings (LLM config, CORS)
+│   │   ├── service/            # Business logic (inference service, etc)
+│   │   └── config/             # Settings utilities (LLM config, CORS)
 │   └── tests/                  # Backend tests
 ├── frontend/                   # React application
 │   ├── app/                    # React Router routes and components
 │   ├── package.json            # Node dependencies
-│   └── Dockerfile              # Multi-stage production build
-├── technical-test/             # Assignment materials
-│   ├── assigment-overview.md   # Original spec document
-│   └── owkin_take_home_data.csv  # Biotech dataset
+│   └── Dockerfile              # Frontend docker file
 ├── pyproject.toml              # uv workspace config (Python version)
 ├── noxfile.py                  # Automation sessions (lint, test, build)
-└── CLAUDE.md                   # Developer reference
+└── CLAUDE.md                   # Claude Code developer reference
 ```
+
+## Technical Decisions
+
+### Language model API interaction on the backend.
+
+Assistant UI provides a way of directly connecting to providers through the frontend. I chose to override this functionality and added an adapter to route chat queries to the backend. This keeps API keys, tool calls, and any additional information exposed by tool calls server side. This reduces attack surface and gives us the flexibility to apply guardrails and similar server-side. This also means that the system prompt cannot be exposed (except through LLM jail-breaking).
+
+The backend streams chat to and from the user interface. Tool calls pause streaming while the backend server collects a full tool call, and then resumes streaming when results are available.
+
+Some features not implemented;
+* Server side session message tracking.
+* Server side guard rails.
+* Multi-media processing (images, file uploads, video, etc).
+
+### Further changes.
+
+Below are some features I would have liked to included in the time but were not prioritised;
+
+* Full docker deployments for both frontend and backend with the appropriate ports exposed, effectively ready for production.
+* Some linting errors have been suppressed which I would have liked to fix.
+* No converstation history in the user interface. Previous conversations are forgotten.
+* I would have liked to add additional tools. The two tool calls in the specification have been implemented but there are ways of wording questions that require the model to call tools many many times, when a simple varient of the tool could have provided details in one go.
+* A gold-standard data set for important user questions, attack vectors, breaking cases, etc.
+* Live trajectory analysis for agent conversations and on-going evaluation.
+* Integration testing to evaluate basic agent capabilities remain intact across changes to prompts and services.
 
 ## Development Workflow
 
-### Backend (Python / FastAPI)
+The project contains a CLAUDE.md file with salient details to allow Claude Code agents to easily explore the project.
 
-**Run the development server:**
-```bash
-uv run nox -s dev
-```
+The project uses `uv` for running python interpreters, managing virtual environments, and running tools. `nox` is used for task running. The nox sessions encompass all development workflow tasks you might need with a `uv run nox` default command that runs all the important builds, checks, tests, security auditing, etc in order. When you need to run commands, you can use `uv run nox -l` to view all available sessions that can be run. Chaining tasks together has been used to make sure the application can be run, built, and developed with the smallest mental burden for development.
 
-The API is available at `http://localhost:8000`. Visit `http://localhost:8000/` for the health check endpoint or `http://localhost:5173` for the frontend.
-
-**Configuration:** The LLM connection settings are in [backend/src/api/config/__init__.py](backend/src/api/config/__init__.py). By default, it connects to a local LM Studio instance at `http://localhost:1234/v1` using model `qwen3.6-35b-a3b-uncensored-genesis-v2-apex-mtp`. Change these values in the file or override via environment variables if you use Pydantic's config support.
-
-**Lint and format:**
-```bash
-# Lint and format checks
-uv run -s lint
-
-# Check + auto-fix
-uv run -s fix
-```
-
-**Run tests:**
-```bash
-uv run -s tests
-```
-
-### Frontend (React / React Router)
-
-**Environment variables:** Copy `.env.example` to `.env` in the `frontend/` directory if you need to change the API URL:
-```bash
-cd frontend && cp .env.example .env
-# Edit VITE_API_URL if your backend runs on a different address
-```
-
-**Run the development server:**
-```bash
-uv run nox -s dev
-```
-
-The app is available at `http://localhost:5173`.
-
-**Build, type check, and lint:**
-```bash
-uv run nox -s frontend
-```
-
-### All-in-one (Nox)
-
-All checks can be run together:
-```bash
-uv run nox          # Run all default sessions
-uv run nox -l       # List available sessions
-```
+The full stack can be run locally using `uv run nox -s dev`.
 
 ## Docker Deployment
 
-The frontend can be containerized using the provided multi-stage [Dockerfile](frontend/Dockerfile):
+A dockerfile is provided for the ReactRouterv77 template React app - [Dockerfile](frontend/Dockerfile):
 
 ```bash
 # Build the image
@@ -133,43 +110,4 @@ docker run -p 3000:3000 \
   owkin-chat-frontend
 ```
 
-The container serves the production-built frontend on port 3000. The `VITE_API_URL` environment variable controls where API calls are sent (set this to your backend's address).
-
-## Architecture
-
-### Request Flow
-
-1. **Frontend** (`@assistant-ui/react`) renders a chat thread.
-2. User messages are serialized as plain text by the `ChatModelAdapter` ([frontend/app/utils/chat-model-adapter.ts](frontend/app/utils/chat-model-adapter.ts))
-3. The adapter sends a POST to the backend `/chat` endpoint (`http://localhost:8000/chat`) with `{ "messages": "<serialized history>" }`
-4. **Backend** (`pydantic_ai.Agent`) streams text chunks back via `AsyncIterable[str]`
-5. Each chunk is yielded immediately, creating a streaming response
-
-### CORS Configuration
-
-CORS is configured dynamically based on `APP_ENV`:
-- **Development** (`APP_ENV=development`): Allows `http://localhost:5173` and `http://127.0.0.1:5173`
-- **Production** (`APP_ENV=production`): Requires `ALLOWED_ORIGINS` environment variable (comma-separated list of allowed origins). Raises an error if not set.
-
-## AI Component Design Decisions
-
-### Why pydantic_ai over raw HTTP calls?
-The project uses [`pydantic_ai`](https://github.com/anthropic/pydantic-ai) instead of direct `httpx`/`openai` SDK calls for the agent layer. This provides:
-- Built-in streaming support via `Agent.run_stream()` with clean async generators
-- Type-safe message handling through Pydantic models
-- A simple abstraction over any OpenAI-compatible endpoint without deep SDK coupling
-
-### Why an OpenAI-compatible local model?
-The default configuration points to a local LM Studio instance (`http://localhost:1234/v1`). This means the app runs on a standard laptop (Mac or Windows, <= 16 GB RAM) without requiring GPU or cloud API keys. The endpoint follows the OpenAI chat completions API format, so any compatible server works.
-
-### Message serialization
-The frontend serializes all messages into a single plain-text string (`"ROLE: content\n\n..."`) before sending to the backend. This keeps the API simple and avoids schema versioning between frontend and backend message types. Tool calls are serialized as `[tool: name(args) => result]` strings.
-
-### Trade-offs
-- **No per-message memory**: The flat text format loses structured message roles, making it harder to add system/user/assistant distinctions in the protocol. This is acceptable for a PoC but would need refinement for production.
-- **Single model**: Only one LLM is configured at a time. Adding model switching or fallback logic would require config changes.
-- **No dataset integration yet**: The agent has a system prompt about being a biotech assistant, but the CSV data functions (`get_targets`, `get_expressions`) from the original spec are not wired in as tools. This is the next step for deeper integration.
-
-## License
-
-MIT
+There is no corresponding Dockerfile for the backend at this time.

@@ -227,6 +227,7 @@ dependencies = [
     { name = "pandas" },
     { name = "pandas-stubs" },
     { name = "pydantic-ai" },
+    { name = "python-dotenv" },
 ]
 
 [package.dev-dependencies]
@@ -252,6 +253,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=3.0.3" },
     { name = "pandas-stubs", specifier = ">=3.0.3.260530" },
     { name = "pydantic-ai", specifier = ">=1.106.0" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
 ]
 
 [package.metadata.requires-dev]

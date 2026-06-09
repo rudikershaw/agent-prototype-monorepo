@@ -91,5 +91,5 @@ class InferenceService:
 
             tool_result = self.tool_service.execute(buffer)
             messages += f"ASSISTANT: {buffer}\n\nSYSTEM: {tool_result}"
-            asyncio.create_task(result.cancel())
+            asyncio.create_task(result.cancel())  # noqa: RUF006
             # Loop continues - Call LLM again with complete history with tool call appended.
