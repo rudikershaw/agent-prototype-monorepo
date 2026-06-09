@@ -35,6 +35,12 @@ The solution can be run and tested immediately using a free Google API key and G
 # Clone the repository
 git clone git@github.com:rudikershaw/agent-prototype-monorepo.git && cd agent-prototype-monorepo
 
+# Full build, lint, tests, etc.
+uv run nox
+
+# Copy the backend .env file and then manually edit to include your provider details.
+cp backend/.env.example backend/.env 
+
 # Start both servers
 uv run nox -s dev
 ```
