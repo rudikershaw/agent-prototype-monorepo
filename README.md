@@ -10,6 +10,15 @@ A chat application that delegates to pydantic AI selected LLM endpoint for conve
 
 ## Overview
 
+The solution is provides relevant answers to the following queries:
+
+* How can you help me?
+* What are the main genes involved in lung cancer?
+* What is the median value expression of genes involved in breast cancer?
+* What is the median value expression of genes involved in esophageal cancer?
+
+Each were tested and confirmed using a local model (a quantised fine tune of Qwen3.6 27B), and Gemini Flash 2.5.
+
 ## Prerequisites
 
 ### uv (Python dependency manager)
@@ -88,7 +97,7 @@ Below are some features I would have liked to included in the time but were not 
 * Live trajectory analysis for agent conversations and on-going evaluation.
 * Integration testing to evaluate basic agent capabilities remain intact across changes to prompts and services.
 
-## Development Workflow
+### Development Workflow
 
 The project contains a CLAUDE.md file with salient details to allow Claude Code agents to easily explore the project.
 
@@ -96,7 +105,7 @@ The project uses `uv` for running python interpreters, managing virtual environm
 
 The full stack can be run locally using `uv run nox -s dev`.
 
-## Docker Deployment
+### Docker Deployment
 
 A dockerfile is provided for the ReactRouterv77 template React app - [Dockerfile](frontend/Dockerfile):
 
