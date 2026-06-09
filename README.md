@@ -1,4 +1,4 @@
-# Owkin Technical Demonstration — AI Chat Agent
+# Technical Demonstration — AI Chat Agent
 
 A chat application that delegates to pydantic AI selected LLM endpoint for conversational interactions about biotech data (genes, cancer indications, expression values). 
 
@@ -117,12 +117,12 @@ A dockerfile is provided for the ReactRouterv7 template React app - [Dockerfile]
 
 ```bash
 # Build the image
-docker build -t owkin-chat-frontend ./frontend/
+docker build -t chat-frontend ./frontend/
 
 # Run it (point to your API backend)
 docker run -p 3000:3000 \
   -e VITE_API_URL=https://your-api.example.com \
-  owkin-chat-frontend
+  chat-frontend
 ```
 
 There is no corresponding Dockerfile for the backend at this time.
