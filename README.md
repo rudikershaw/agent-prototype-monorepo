@@ -113,7 +113,7 @@ The full stack can be run locally using `uv run nox -s dev`.
 
 ### Docker Deployment
 
-A dockerfile is provided for the ReactRouterv77 template React app - [Dockerfile](frontend/Dockerfile):
+A dockerfile is provided for the ReactRouterv7 template React app - [Dockerfile](frontend/Dockerfile):
 
 ```bash
 # Build the image
