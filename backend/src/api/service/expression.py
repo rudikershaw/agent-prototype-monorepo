@@ -30,3 +30,9 @@ def get_expressions(genes: list[str]) -> dict[str, float]:
     """
     subset = df[df["gene"].isin(genes)]
     return dict(zip(subset["gene"], subset["median_value"], strict=True))
+
+
+def get_cancer_types(genes: list[str]) -> list[tuple[str, str]]:
+    """Return a list of (cancer_indication, gene) pairs for the given list of genes."""
+    subset = df[df["gene"].isin(genes)]
+    return list(zip(subset["cancer_indication"], subset["gene"], strict=True))

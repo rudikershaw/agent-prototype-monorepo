@@ -7,10 +7,9 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from api.service.inference import InferenceService
+from api.service.inference import InferenceServiceDep
 
 router = APIRouter()
-_inference_service = InferenceService()
 
 
 class ChatRequest(BaseModel):
@@ -23,11 +22,11 @@ class ChatRequest(BaseModel):
 
 
 @router.post("/chat", tags=["chat"], response_class=StreamingResponse)
-async def chat(chat_request: ChatRequest) -> AsyncIterable[str]:
+async def chat(chat_request: ChatRequest, inference_service: InferenceServiceDep) -> AsyncIterable[str]:
     """Chat endpoint."""
     try:
         async with asyncio.timeout(30.0):
-            async for text_chunk in _inference_service.chat(chat_request.messages):
+            async for text_chunk in inference_service.chat(chat_request.messages):
                 yield text_chunk
     except TimeoutError:
         yield "My apologies, I've been unable to process your request. Would you like me to try again?"

@@ -1,14 +1,16 @@
 """Inference service module."""
 
 from collections.abc import AsyncGenerator
+from typing import Annotated
 
+from fastapi import Depends
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from api.config import inference_config
 from api.config.resources import load_prompt
-from api.service.expression import get_expressions, get_targets
+from api.service.expression import get_cancer_types, get_expressions, get_targets
 
 
 class InferenceService:
@@ -26,7 +28,9 @@ class InferenceService:
             self.model = inference_config.model
 
         self.agent = Agent(
-            self.model, system_prompt=load_prompt("system-prompt.md"), tools=[get_targets, get_expressions]
+            self.model,
+            system_prompt=load_prompt("system-prompt.md"),
+            tools=[get_targets, get_expressions, get_cancer_types],
         )
 
     async def chat(self, messages: str) -> AsyncGenerator[str, None]:
@@ -34,3 +38,6 @@ class InferenceService:
         async with self.agent.run_stream(messages) as result:
             async for text_chunk in result.stream_text(delta=True):
                 yield text_chunk
+
+
+InferenceServiceDep = Annotated[InferenceService, Depends(InferenceService)]
