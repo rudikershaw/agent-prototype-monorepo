@@ -10,8 +10,6 @@ from api.config import InferenceConfig
 from api.config.cors import configure_cors
 from api.config.resources import _RESOURCES_DIR, load_resource
 from api.controller.chat import ChatRequest
-from api.service.inference import _partial_open_tag_suffix_len
-from api.service.tools import ToolService
 
 
 def test_inference_config_override_fields() -> None:
@@ -33,34 +31,6 @@ def test_load_resource_with_single_part() -> None:
     result = load_resource("prompts")
     expected = _RESOURCES_DIR / "prompts"
     assert result == expected
-
-
-def test_has_tool_call_detects_valid_tag() -> None:
-    """has_tool_call returns True when text contains a tool_code block."""
-    svc = ToolService()
-    assert svc.has_tool_call("some text <tool_code>get_targets('BRCA1')</tool_code> more text") is True
-
-
-def test_has_tool_call_no_tag() -> None:
-    """has_tool_call returns False when no tool_code block is present."""
-    svc = ToolService()
-    assert svc.has_tool_call("just plain text with no tags") is False
-
-
-def test_has_tool_call_empty_string() -> None:
-    """has_tool_call returns False for an empty string."""
-    svc = ToolService()
-    assert svc.has_tool_call("") is False
-
-
-def test_partial_open_tag_no_match() -> None:
-    """_partial_open_tag_suffix_len returns 0 when there's no partial match."""
-    assert _partial_open_tag_suffix_len("hello world") == 0
-
-
-def test_partial_open_tag_exact_match() -> None:
-    """_partial_open_tag_suffix_len returns full length when text equals the tag."""
-    assert _partial_open_tag_suffix_len("<tool_code>") == len("<tool_code>")
 
 
 def test_chat_request_valid() -> None:

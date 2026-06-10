@@ -27,7 +27,7 @@ Use `uv run nox -l` and `uv run noc -s ${SESSION}` over manual commands to the v
   - `src/api/config/` — `InferenceConfig`, CORS settings, and resource path resolution (`resources.py`)
   - `src/api/resources/` — Non-Python assets: system prompt template and the cancer gene expression CSV
 - `frontend/` — React application
-  - `app/routes/` — Route definitions: home (chat), assistant (standalone chat page), health status, API proxy (`api/chat`)
+  - `app/routes/` — Route definitions: home (chat), assistant (standalone chat page), health status
   - `app/components/assistant-ui/` — Custom Assistant UI components (thread, markdown rendering, reasoning panels, tool fallbacks)
   - `app/components/header/` — Header with logo and navigation
   - `app/components/health/` — Health status display component
