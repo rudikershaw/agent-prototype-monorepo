@@ -36,7 +36,7 @@ class InferenceService:
     async def chat(self, messages: str) -> AsyncGenerator[str, None]:
         """Handle a chat inference request."""
         async with self.agent.run_stream(messages) as result:
-            async for text_chunk in result.stream_text(delta=True):
+            async for text_chunk in result.stream_text():
                 yield text_chunk
 
 

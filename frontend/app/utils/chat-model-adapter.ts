@@ -35,17 +35,15 @@ export const MyChatAdapter: ChatModelAdapter = {
 
 		const reader = response.body.getReader();
 		const decoder = new TextDecoder();
-		let accumulatedText = "";
 
 		try {
 			while (true) {
 				const { done, value } = await reader.read();
 				if (done) break;
 
-				const chunk = decoder.decode(value, { stream: true });
-				if (chunk) {
-					accumulatedText += chunk;
-					yield { content: [{ type: "text", text: accumulatedText }] };
+				const text = decoder.decode(value, { stream: true });
+				if (text) {
+					yield { content: [{ type: "text", text: text }] };
 				}
 			}
 		} finally {
